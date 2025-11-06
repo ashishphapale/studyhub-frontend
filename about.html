@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About | StudyHub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    /* ====== ABOUT PAGE STYLES ====== */
+    .hero {
+      background: linear-gradient(135deg, #0d6efd, #6610f2);
+      color: white;
+      text-align: center;
+      padding: 100px 20px;
+      border-radius: 0 0 50px 50px;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 700;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    .about-section {
+      padding: 80px 0;
+    }
+
+    .about-section img {
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .contact-section {
+      background: #f8f9fa;
+      padding: 80px 0;
+    }
+
+    .contact-section .card {
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .contact-section {
+      background: #121212;
+    }
+
+    .form-control {
+      border-radius: 8px;
+    }
+
+    .btn-gradient {
+      background: linear-gradient(45deg, #0d6efd, #6610f2);
+      border: none;
+      color: white;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+
+    .btn-gradient:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #6c757d;
+      border-top: 1px solid #dee2e6;
+      font-size: 0.9rem;
+    }
+
+    body.dark-mode footer {
+      border-color: #2b2f36;
+      color: #adb5bd;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="home.html">📘 StudyHub</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="profile.html">Profile</a></li>
+          <li class="nav-item"><a class="nav-link active" href="about.html">About</a></li>
+          <li class="nav-item ms-2">
+            <button class="btn btn-outline-light btn-sm" data-theme-toggle onclick="toggleTheme(this)">🌙 Dark</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1 data-aos="fade-up">About StudyHub</h1>
+      <p data-aos="fade-up" data-aos-delay="100">Empowering learners with collaboration, simplicity, and technology.</p>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about-section container">
+    <div class="row align-items-center">
+      <div class="col-md-6" data-aos="fade-right">
+        <h2 class="fw-bold mb-3">Our Mission</h2>
+        <p class="text-muted">
+          StudyHub was built to make studying collaborative, smart, and simple. We believe that every learner should have access
+          to quality notes, shared resources, and the power to connect with peers around the world.
+        </p>
+        <p class="text-muted">
+          Whether you're preparing for exams or sharing your knowledge, StudyHub makes it effortless — upload, search, download, and grow together.
+        </p>
+      </div>
+      <div class="col-md-6" data-aos="fade-left">
+        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f" class="img-fluid" alt="Team Collaboration" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="contact-section">
+    <div class="container">
+      <div class="text-center mb-5" data-aos="fade-up">
+        <h2 class="fw-bold">📬 Get in Touch</h2>
+        <p class="text-muted">Have a question, suggestion, or feedback? We’d love to hear from you!</p>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card p-4" data-aos="zoom-in">
+            <form id="contactForm">
+              <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="name" class="form-control" required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" id="email" class="form-control" required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Message</label>
+                <textarea id="message" class="form-control" rows="4" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-gradient w-100 py-2">Send Message</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 StudyHub. Made with ❤️ by Ashish | All rights reserved.</p>
+  </footer>
+
+  <!-- Toast + Spinner -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index:1100"><div id="toastBox"></div></div>
+  <div id="loadingSpinner" class="position-fixed top-50 start-50 translate-middle d-none" style="z-index:2000;">
+    <div class="spinner-border text-primary" style="width:4rem;height:4rem" role="status"><span class="visually-hidden">Loading...</span></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script src="js/uiHelpers.js"></script>
+  <script src="js/theme.js"></script>
+
+  <script>
+    AOS.init();
+
+    // ✅ Initialize EmailJS (replace with your EmailJS service details)
+    emailjs.init("YOUR_PUBLIC_KEY_HERE"); // <-- replace with your EmailJS public key
+
+    const contactForm = document.getElementById("contactForm");
+    contactForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const message = document.getElementById("message").value;
+
+      showSpinner();
+
+      try {
+        const res = await emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+          from_name: name,
+          from_email: email,
+          message: message,
+        });
+
+        hideSpinner();
+        showToast("✅ Message sent successfully!", "success");
+        contactForm.reset();
+      } catch (err) {
+        hideSpinner();
+        showToast("❌ Failed to send message. Try again.", "danger");
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>

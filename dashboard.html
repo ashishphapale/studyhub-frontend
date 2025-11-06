@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | StudyHub</title>
+
+  <!-- Bootstrap + AOS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    body {
+      padding-top: 70px;
+      background-color: var(--bs-body-bg);
+    }
+
+    /* ===== Header ===== */
+    .dashboard-header {
+      background: linear-gradient(135deg, #0d6efd, #6610f2);
+      color: white;
+      text-align: center;
+      padding: 120px 20px 90px;
+      border-radius: 0 0 50px 50px;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .dashboard-header h1 {
+      font-weight: 700;
+      font-size: 2.5rem;
+    }
+
+    .dashboard-header p {
+      opacity: 0.95;
+      font-size: 1.1rem;
+    }
+
+    /* ===== Upload Section ===== */
+    .upload-card {
+      max-width: 700px;
+      margin: -70px auto 50px;
+      background: var(--card);
+      border-radius: 20px;
+      padding: 35px 40px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+      overflow: visible;
+      transition: 0.3s ease;
+    }
+
+    .upload-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .upload-card h4 {
+      font-weight: 700;
+      text-align: center;
+      color: #0d6efd;
+      margin-bottom: 25px;
+    }
+
+    .form-control,
+    .form-select {
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 1rem;
+    }
+
+    .btn-gradient {
+      background: linear-gradient(45deg, #0d6efd, #6610f2);
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      border-radius: 12px;
+      padding: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+    }
+
+    /* ===== Notes Section ===== */
+    .notes-section {
+      padding: 20px 0 70px;
+    }
+
+    .notes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .notes-header h4 {
+      font-weight: 700;
+      color: #0d6efd;
+    }
+
+    #searchInput {
+      max-width: 360px;
+      border-radius: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      transition: 0.3s;
+    }
+
+    #searchInput:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
+    }
+
+    .note-card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .note-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .note-card .card-body {
+      padding: 18px 20px;
+    }
+
+    .note-card h5 {
+      font-weight: 600;
+      color: #0d6efd;
+      margin-bottom: 8px;
+    }
+
+    .note-card p {
+      font-size: 0.95rem;
+      color: #444;
+      margin-bottom: 8px;
+    }
+
+    .note-meta {
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
+
+    /* ===== Dark Mode ===== */
+    body.dark-mode .upload-card,
+    body.dark-mode .note-card {
+      background: #1e2127;
+      color: #e9eef9;
+    }
+
+    body.dark-mode .note-meta {
+      color: #b8c0cc;
+    }
+
+    footer {
+      margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .upload-card {
+        margin: -50px 15px 40px;
+        padding: 25px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="home.html">📘 StudyHub</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link active" href="dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="profile.html">Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+          <li class="nav-item ms-2">
+            <button class="btn btn-outline-light btn-sm" data-theme-toggle onclick="toggleTheme(this)">🌙 Dark</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="dashboard-header">
+    <h1 data-aos="fade-up">Your Study Dashboard</h1>
+    <p data-aos="fade-up" data-aos-delay="100">Upload, organize, and explore your learning materials with ease 🚀</p>
+  </header>
+
+  <!-- Upload Form -->
+  <section class="upload-card" data-aos="zoom-in">
+    <h4>📤 Upload New Note</h4>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <input type="text" id="noteTitle" class="form-control" placeholder="Note Title" required />
+        </div>
+        <div class="col-md-6">
+          <input type="text" id="noteSubject" class="form-control" placeholder="Subject" required />
+        </div>
+        <div class="col-md-8">
+          <input type="text" id="noteTags" class="form-control" placeholder="Tags (comma separated)" />
+        </div>
+        <div class="col-md-4">
+          <input type="file" id="noteFile" class="form-control" accept=".pdf,.docx,.jpg,.png" required />
+        </div>
+      </div>
+      <div class="d-flex gap-3 mt-3">
+        <button type="submit" class="btn btn-gradient flex-fill">Upload Note</button>
+        <button type="button" id="clearForm" class="btn btn-outline-secondary flex-fill">Clear</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Notes Section -->
+  <section class="notes-section container">
+    <div class="notes-header" data-aos="fade-right">
+      <h4>🗂️ Your Notes</h4>
+      <input type="text" id="searchInput" placeholder="Search notes..." />
+    </div>
+
+    <div id="notesContainer" class="row g-4" data-aos="fade-up">
+      <!-- Notes dynamically loaded -->
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center text-muted py-3">
+    <p>© 2025 StudyHub | Designed by ❤️ Ashish</p>
+  </footer>
+
+  <!-- Toast + Spinner -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index:1100">
+    <div id="toastBox"></div>
+  </div>
+  <div id="loadingSpinner" class="position-fixed top-50 start-50 translate-middle d-none" style="z-index:2000;">
+    <div class="spinner-border text-primary" style="width:4rem;height:4rem" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="js/uiHelpers.js"></script>
+  <script src="js/theme.js"></script>
+  <script type="module" src="js/dashboard.js"></script>
+  <script>AOS.init({ duration: 800, once: true });</script>
+</body>
+</html>
