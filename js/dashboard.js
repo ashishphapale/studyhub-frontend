@@ -1,9 +1,14 @@
 // frontend/js/dashboard.js
 import { showSpinner, hideSpinner, showToast } from "./uiHelpers.js";
 
+// ✅ Use your deployed backend URL
 const API_BASE = "https://studyhub-backend.onrender.com/api";
 
+// ✅ Retrieve token and user safely
 const token = localStorage.getItem("token");
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+// ✅ DOM Elements
 const uploadForm = document.getElementById("uploadForm");
 const notesContainer = document.getElementById("notesContainer");
 const searchInput = document.getElementById("searchInput");
@@ -11,86 +16,81 @@ const clearFormBtn = document.getElementById("clearForm");
 
 let allNotes = [];
 
-// ✅ Require login
-if (!token) {
-  window.location.href = "login.html";
-}
+// ✅ Auth Guard — Run only after DOM loads
+window.addEventListener("DOMContentLoaded", () => {
+  if (!token || !user?.email) {
+    showToast("Please login first!", "warning");
+    setTimeout(() => (window.location.href = "login.html"), 1000);
+    return;
+  }
+  fetchNotes(); // ✅ Fetch after confirming token
+});
 
-// ✅ Fetch Notes for Logged-In User
+// ===============================
+// Fetch Notes for Logged-in User
+// ===============================
 async function fetchNotes() {
   showSpinner();
   try {
-    const res = await fetch(`${API_BASE}/mine`, {
+    const res = await fetch(`${API_BASE}/notes/mine`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
     if (res.status === 401 || res.status === 403) {
       hideSpinner();
-      showToast("Session expired. Please log in again.", "warning");
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      setTimeout(() => (window.location.href = "login.html"), 800);
+      showToast("Session expired. Please login again.", "warning");
+      localStorage.clear();
+      setTimeout(() => (window.location.href = "login.html"), 1200);
       return;
     }
 
     const data = await res.json();
-    if (!res.ok) {
-      console.error("Fetch notes failed:", data);
-      showToast(data.message || "Error fetching notes", "danger");
-      hideSpinner();
-      return;
-    }
+    if (!res.ok) throw new Error(data.message || "Failed to fetch notes.");
 
-    allNotes = Array.isArray(data) ? data : data.notes || [];
+    allNotes = Array.isArray(data) ? data : [];
     renderNotes(allNotes);
   } catch (err) {
-    console.error("Fetch notes error:", err);
-    showToast("Error fetching notes. Check server connection.", "danger");
+    console.error("Fetch Notes Error:", err);
+    showToast("Error fetching notes", "danger");
   } finally {
     hideSpinner();
   }
 }
 
-// ✅ Render Note Cards (Modern UI)
+// ===============================
+// Render Note Cards
+// ===============================
 function renderNotes(notes = []) {
   notesContainer.innerHTML = "";
   if (!notes.length) {
-    notesContainer.innerHTML = `
-      <div class="col-12 text-center text-muted mt-4">
-        No notes yet — upload your first note 📘
-      </div>`;
+    notesContainer.innerHTML = `<div class="col-12 text-center text-muted mt-3">📄 No notes found. Upload your first one!</div>`;
     return;
   }
 
   notes.forEach((note) => {
-    const col = document.createElement("div");
-    col.className = "col-12 col-sm-6 col-md-4 col-lg-3";
-
-    col.innerHTML = `
-      <div class="note-card card shadow-sm h-100" data-aos="fade-up">
+    const card = document.createElement("div");
+    card.className = "col-md-4 col-sm-6 mb-4";
+    card.innerHTML = `
+      <div class="card note-card shadow-sm h-100" data-aos="fade-up">
         <div class="card-body d-flex flex-column">
-          <h5 class="mb-1 text-primary fw-semibold">${escapeHtml(note.title)}</h5>
-          <p class="mb-1"><strong>Subject:</strong> ${escapeHtml(note.subject)}</p>
-          <p class="note-meta small text-muted mb-2">
-            Tags: ${Array.isArray(note.tags) ? note.tags.join(", ") : (note.tags || "—")}
-          </p>
+          <h5 class="card-title">${escapeHtml(note.title)}</h5>
+          <p class="card-text mb-1"><strong>Subject:</strong> ${escapeHtml(note.subject)}</p>
+          <p class="text-muted small">Tags: ${note.tags?.join(", ") || "—"}</p>
           <div class="mt-auto d-flex gap-2">
-            <a class="btn btn-outline-primary btn-sm flex-fill"
-               href="https://studyhub-backend.onrender.com/${note.filePath.replace(/\\/g, '/')}"
-               target="_blank">📥 Download</a>
-            <button class="btn btn-outline-danger btn-sm flex-fill"
-                    data-id="${note._id}">🗑 Delete</button>
+            <a href="${API_BASE}/notes/download/${note._id}" target="_blank" class="btn btn-outline-primary btn-sm flex-fill">📥 Download</a>
+            <button class="btn btn-outline-danger btn-sm flex-fill" data-id="${note._id}">🗑 Delete</button>
           </div>
         </div>
       </div>
     `;
-
-    col.querySelector("button[data-id]")?.addEventListener("click", () => deleteNote(note._id));
-    notesContainer.appendChild(col);
+    card.querySelector("button[data-id]").addEventListener("click", () => deleteNote(note._id));
+    notesContainer.appendChild(card);
   });
 }
 
-// ✅ Upload Note
+// ===============================
+// Upload New Note
+// ===============================
 uploadForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   showSpinner();
@@ -102,8 +102,7 @@ uploadForm?.addEventListener("submit", async (e) => {
 
   if (!file) {
     hideSpinner();
-    showToast("Please select a file to upload.", "warning");
-    return;
+    return showToast("Please select a file to upload.", "warning");
   }
 
   try {
@@ -113,81 +112,73 @@ uploadForm?.addEventListener("submit", async (e) => {
     formData.append("tags", tags);
     formData.append("file", file);
 
-    const res = await fetch(API_BASE, {
+    const res = await fetch(`${API_BASE}/notes`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
 
     const data = await res.json();
-    if (!res.ok) {
-      console.error("Upload failed:", data);
-      showToast(data.message || "Upload failed", "danger");
-      hideSpinner();
-      return;
-    }
+    if (!res.ok) throw new Error(data.message);
 
-    showToast("✅ Note uploaded successfully!", "success");
+    showToast("Note uploaded successfully!", "success");
     uploadForm.reset();
     fetchNotes();
   } catch (err) {
-    console.error("Upload error:", err);
-    showToast("Server error during upload", "danger");
+    console.error("Upload Error:", err);
+    showToast("Error uploading note", "danger");
   } finally {
     hideSpinner();
   }
 });
 
-// ✅ Delete Note
+// ===============================
+// Delete Note
+// ===============================
 async function deleteNote(id) {
-  if (!confirm("Delete this note?")) return;
+  if (!confirm("Delete this note permanently?")) return;
   showSpinner();
   try {
-    const res = await fetch(`${API_BASE}/${id}`, {
+    const res = await fetch(`${API_BASE}/notes/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
+
     const data = await res.json();
-    if (!res.ok) {
-      console.error("Delete failed:", data);
-      showToast(data.message || "Delete failed", "danger");
-      hideSpinner();
-      return;
-    }
-    showToast("🗑 Note deleted", "info");
+    if (!res.ok) throw new Error(data.message);
+
+    showToast("Note deleted", "info");
     fetchNotes();
   } catch (err) {
-    console.error("Delete error:", err);
-    showToast("Error deleting note", "danger");
+    console.error("Delete Error:", err);
+    showToast("Failed to delete note", "danger");
   } finally {
     hideSpinner();
   }
 }
 
-// ✅ Search & Filter Notes
+// ===============================
+// Search / Filter
+// ===============================
 searchInput?.addEventListener("input", () => {
   const q = searchInput.value.trim().toLowerCase();
-  if (!q) return renderNotes(allNotes);
-  const filtered = allNotes.filter((n) =>
-    (n.title || "").toLowerCase().includes(q) ||
-    (n.subject || "").toLowerCase().includes(q) ||
-    (Array.isArray(n.tags) ? n.tags.join(" ").toLowerCase() : (n.tags || "")).includes(q)
+  const filtered = allNotes.filter(
+    (n) =>
+      n.title?.toLowerCase().includes(q) ||
+      n.subject?.toLowerCase().includes(q) ||
+      n.tags?.join(",").toLowerCase().includes(q)
   );
   renderNotes(filtered);
 });
 
-// ✅ Clear Form
-clearFormBtn?.addEventListener("click", () => uploadForm.reset());
-
-// ✅ Escape HTML helper
+// ===============================
+// Helper: Escape HTML
+// ===============================
 function escapeHtml(str = "") {
-  return String(str)
+  return str
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 }
-
-// ✅ Load Notes Initially
-fetchNotes();
