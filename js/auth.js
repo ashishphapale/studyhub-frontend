@@ -1,124 +1,114 @@
-// frontend/js/auth.js
-import { showToast, showSpinner, hideSpinner } from "./uiHelpers.js";
+// backend/server.js
+const express = require("express");
+const dotenv = require("dotenv");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const compression = require("compression");
+const path = require("path");
+const connectDB = require("./config/db");
 
-// ✅ Your Render backend base URL (only change this if you rename the service)
-const API_BASE = "https://studyhub-backend.onrender.com/api/auth";
+// ==========================
+// Load Environment Variables
+// ==========================
+dotenv.config();
+connectDB();
 
-// ============================
-// REGISTER FUNCTIONALITY
-// ============================
-const registerForm = document.getElementById("registerForm");
+const app = express();
 
-registerForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  showSpinner();
+// ==========================
+// Core Middleware
+// ==========================
+app.use(express.json({ limit: "10mb" }));
 
-  const username = document.getElementById("regUsername")?.value.trim();
-  const email = document.getElementById("regEmail")?.value.trim();
-  const password = document.getElementById("regPassword")?.value.trim();
+// ✅ FIXED CORS — Handles Netlify + Localhost + Preflight OPTIONS
+const allowedOrigins = [
+  "https://ashishstudyhub.netlify.app", // ✅ your Netlify frontend
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+];
 
-  if (!username || !email || !password) {
-    hideSpinner();
-    return showToast("⚠️ Please fill all fields.", "warning");
+// ✅ Manually handle CORS for full control (Render-friendly)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
   }
 
-  try {
-    const res = await fetch(`${API_BASE}/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
-    });
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
 
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      hideSpinner();
-      console.error("Register Error:", data);
-      return showToast(data.message || "Registration failed.", "danger");
-    }
-
-    // ✅ Save user + token securely
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-
-    hideSpinner();
-    showToast("🎉 Registration successful!", "success");
-
-    // ✅ Redirect after short delay
-    setTimeout(() => {
-      window.location.href = "dashboard.html";
-    }, 800);
-  } catch (err) {
-    console.error("Register Exception:", err);
-    hideSpinner();
-    showToast("❌ Server error during registration.", "danger");
+  // ✅ End preflight requests immediately
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
   }
+
+  next();
 });
 
-// ============================
-// LOGIN FUNCTIONALITY
-// ============================
-const loginForm = document.getElementById("loginForm");
+// ==========================
+// Security & Performance
+// ==========================
+app.use(helmet());
+app.use(morgan("dev"));
+app.use(compression());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-loginForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  showSpinner();
-
-  const email = document.getElementById("loginEmail")?.value.trim();
-  const password = document.getElementById("loginPassword")?.value.trim();
-
-  if (!email || !password) {
-    hideSpinner();
-    return showToast("⚠️ Please enter both email and password.", "warning");
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      hideSpinner();
-      console.error("Login Error:", data);
-      return showToast(data.message || "Invalid credentials.", "danger");
-    }
-
-    // ✅ Save login data safely
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-
-    hideSpinner();
-    showToast("✅ Login successful!", "success");
-
-    // ✅ Redirect after delay
-    setTimeout(() => {
-      window.location.href = "dashboard.html";
-    }, 800);
-  } catch (err) {
-    console.error("Login Exception:", err);
-    hideSpinner();
-    showToast("❌ Server error during login.", "danger");
-  }
+// ==========================
+// Test Routes
+// ==========================
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "✅ StudyHub Backend is Running!",
+    environment: process.env.NODE_ENV || "development",
+    timestamp: new Date().toISOString(),
+  });
 });
 
-// ============================
-// COMMON HELPERS (optional but recommended)
-// ============================
-
-// Ensures localStorage data is not corrupted
-window.addEventListener("DOMContentLoaded", () => {
-  try {
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (token && user?.email) {
-      console.log("🔐 Authenticated user:", user.email);
-    }
-  } catch (err) {
-    console.warn("Clearing corrupted localStorage data.");
-    localStorage.clear();
-  }
+// ✅ Optional CORS test route
+app.get("/api/test-cors", (req, res) => {
+  res.json({
+    success: true,
+    origin: req.headers.origin,
+    allowedOrigins,
+    message: "CORS configuration working ✅",
+  });
 });
+
+// ==========================
+// API Routes
+// ==========================
+const authRoutes = require("./routes/authRoutes");
+const noteRoutes = require("./routes/noteRoutes");
+
+app.use("/api/auth", authRoutes);
+app.use("/api/notes", noteRoutes);
+
+// ==========================
+// 404 Handler
+// ==========================
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+    path: req.originalUrl,
+  });
+});
+
+// ==========================
+// Global Error Handler
+// ==========================
+app.use((err, req, res, next) => {
+  console.error("🔥 Server Error:", err.message);
+  res.status(500).json({
+    success: false,
+    message: "Internal Server Error",
+    error: err.message,
+  });
+});
+
+// ==========================
+// Start Server
+// ==========================
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
