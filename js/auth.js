@@ -1,80 +1,107 @@
-// js/auth.js (updated)
-import { showSpinner, hideSpinner, showToast } from "./uiHelpers.js";
+// frontend/js/auth.js
 
-const API_BASE = "https://studyhub-backend.onrender.com/api";
+import { showToast, showSpinner, hideSpinner } from "./uiHelpers.js";
 
+// ✅ Deployed backend base URL
+const API_BASE = "https://studyhub-backend.onrender.com/api/auth";
 
-// REGISTER
+// ============================
+// REGISTER FUNCTIONALITY
+// ============================
 const registerForm = document.getElementById("registerForm");
-if (registerForm) {
-  registerForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    showSpinner();
 
-    const username = document.getElementById("username").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
+registerForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  showSpinner();
 
-    try {
-      const res = await fetch(`${API_BASE}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
-      });
+  const username = document.getElementById("regUsername").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const password = document.getElementById("regPassword").value.trim();
 
-      const data = await res.json();
+  if (!username || !email || !password) {
+    hideSpinner();
+    showToast("Please fill all fields.", "warning");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, email, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
       hideSpinner();
-
-      if (res.ok) {
-        // backend returns token and user object
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user || {}));
-        showToast("Registration successful! Redirecting...", "success");
-        setTimeout(() => (window.location.href = "dashboard.html"), 1000);
-      } else {
-        showToast(data.message || "Error registering", "danger");
-      }
-    } catch (err) {
-      hideSpinner();
-      showToast("Server error during registration!", "danger");
-      console.error("Register error:", err);
+      showToast(data.message || "Registration failed.", "danger");
+      console.error("Register Error:", data);
+      return;
     }
-  });
-}
 
-// LOGIN
+    // ✅ Save token & user
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    hideSpinner();
+    showToast("Registration successful!", "success");
+    setTimeout(() => (window.location.href = "dashboard.html"), 800);
+  } catch (err) {
+    console.error("Register Exception:", err);
+    hideSpinner();
+    showToast("Server error during registration.", "danger");
+  }
+});
+
+// ============================
+// LOGIN FUNCTIONALITY
+// ============================
 const loginForm = document.getElementById("loginForm");
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    showSpinner();
 
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value;
+loginForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  showSpinner();
 
-    try {
-      const res = await fetch(`${API_BASE}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
 
-      const data = await res.json();
+  if (!email || !password) {
+    hideSpinner();
+    showToast("Please enter both email and password.", "warning");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
       hideSpinner();
-
-      if (res.ok) {
-        localStorage.setItem("token", data.token);
-        // if backend returned a user object include it (some implementations do)
-        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
-        showToast("Login successful! Redirecting...", "success");
-        setTimeout(() => (window.location.href = "dashboard.html"), 900);
-      } else {
-        showToast(data.message || "Invalid login credentials", "danger");
-      }
-    } catch (err) {
-      hideSpinner();
-      showToast("Server error during login!", "danger");
-      console.error("Login error:", err);
+      showToast(data.message || "Invalid credentials.", "danger");
+      console.error("Login Error:", data);
+      return;
     }
-  });
-}
+
+    // ✅ Save token & user
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    hideSpinner();
+    showToast("Login successful!", "success");
+    setTimeout(() => (window.location.href = "dashboard.html"), 800);
+  } catch (err) {
+    console.error("Login Exception:", err);
+    hideSpinner();
+    showToast("Server error during login.", "danger");
+  }
+});

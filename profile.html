@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="css/style.css" />
 
   <style>
-    /* ===== PROFILE PAGE CUSTOM STYLES ===== */
     body { padding-top: 70px; }
 
     .profile-header {
@@ -28,9 +27,8 @@
       font-size: 2.4rem;
     }
 
-    /* --- Smaller Card Container --- */
     .profile-card {
-      max-width: 500px; /* reduced from 700px */
+      max-width: 500px;
       margin: 0 auto;
       background: var(--card);
       border-radius: 18px;
@@ -43,7 +41,6 @@
       z-index: 2;
     }
 
-    /* Avatar */
     .avatar-wrapper {
       position: relative;
       display: flex;
@@ -53,7 +50,7 @@
     }
 
     .profile-avatar {
-      width: 120px; /* smaller */
+      width: 120px;
       height: 120px;
       border-radius: 50%;
       object-fit: cover;
@@ -122,9 +119,7 @@
       color: #f8f9fa;
     }
 
-    footer {
-      margin-top: 0;
-    }
+    footer { margin-top: 0; }
 
     @media (max-width: 576px) {
       .profile-card {
@@ -174,11 +169,10 @@
     <div class="profile-card" data-aos="zoom-in">
       <div class="avatar-wrapper">
         <img id="profileAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
-          class="profile-avatar mb-3" alt="User Avatar" />
+             class="profile-avatar mb-3" alt="User Avatar" />
       </div>
 
-      <input type="file" id="avatarUpload" accept="image/*"
-        class="form-control form-control-sm w-75 mx-auto mb-2" />
+      <input type="file" id="avatarUpload" accept="image/*" class="form-control form-control-sm w-75 mx-auto mb-2" />
       <small class="upload-label d-block mb-3">Choose a new photo to update your avatar</small>
 
       <div class="info-box">
@@ -217,14 +211,32 @@
   <!-- Toast + Spinner -->
   <div class="position-fixed bottom-0 end-0 p-3" style="z-index:1100"><div id="toastBox"></div></div>
   <div id="loadingSpinner" class="position-fixed top-50 start-50 translate-middle d-none" style="z-index:2000;">
-    <div class="spinner-border text-primary" style="width:4rem;height:4rem" role="status"><span class="visually-hidden">Loading...</span></div>
+    <div class="spinner-border text-primary" style="width:4rem;height:4rem" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
   </div>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script src="js/uiHelpers.js"></script>
   <script src="js/theme.js"></script>
-  <script type="module" src="js/profile.js"></script>
-  <script>AOS.init();</script>
+
+  <!-- ✅ Important: Load profile.js only after DOM & AOS are ready -->
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      AOS.init();
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        showToast("Please log in first.", "warning");
+        setTimeout(() => (window.location.href = "login.html"), 1000);
+        return;
+      }
+
+      // Dynamically import profile script (avoids premature redirect)
+      import("./js/profile.js").catch((err) => console.error("Profile JS load error:", err));
+    });
+  </script>
 </body>
 </html>

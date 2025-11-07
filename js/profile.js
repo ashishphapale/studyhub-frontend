@@ -2,10 +2,14 @@
 
 import { showToast, showSpinner, hideSpinner } from "./uiHelpers.js";
 
+// ✅ Base API URL (Render backend)
+const API_BASE = "https://studyhub-backend.onrender.com/api";
+
 // Load user data from localStorage
 const user = JSON.parse(localStorage.getItem("user"));
 const token = localStorage.getItem("token");
 
+// DOM Elements
 const nameEl = document.getElementById("profileName");
 const emailEl = document.getElementById("profileEmail");
 const joinedEl = document.getElementById("profileJoined");
@@ -31,7 +35,8 @@ function formatJoinDate(dateString) {
 // ✅ Load user details
 window.addEventListener("DOMContentLoaded", () => {
   if (!user || !token) {
-    window.location.href = "login.html";
+    showToast("Please log in first.", "warning");
+    setTimeout(() => (window.location.href = "login.html"), 800);
     return;
   }
 
@@ -40,7 +45,7 @@ window.addEventListener("DOMContentLoaded", () => {
   joinedEl.textContent = formatJoinDate(user.createdAt);
 });
 
-// ✅ Handle avatar preview
+// ✅ Handle avatar preview (client-side only)
 uploadInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (file) {
@@ -52,7 +57,7 @@ uploadInput.addEventListener("change", (e) => {
   }
 });
 
-// ✅ Handle Save Avatar button (demo simulation)
+// ✅ Handle Save Avatar (future-ready API upload)
 saveBtn.addEventListener("click", async () => {
   const file = uploadInput.files[0];
   if (!file) {
@@ -62,11 +67,18 @@ saveBtn.addEventListener("click", async () => {
 
   showSpinner();
 
-  // Simulate upload delay
-  setTimeout(() => {
+  try {
+    // Future endpoint (optional): /api/user/avatar
+    // For now we simulate upload for 1.5s
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     hideSpinner();
-    showToast("Avatar updated successfully!", "success");
-  }, 1500);
+    showToast("✅ Avatar updated successfully!", "success");
+  } catch (err) {
+    hideSpinner();
+    showToast("Error updating avatar. Try again later.", "danger");
+    console.error("Avatar upload error:", err);
+  }
 });
 
 // ✅ Logout
